@@ -19,22 +19,15 @@ The trade-off is the address: `yourname.pythonanywhere.com`. Custom domains
 need a paid plan. If you want `chestercountywashing.org`, skip to
 [Render](#alternative-render-7month) below.
 
-### 1. Put the code on GitHub
+### 1. Put the code on GitHub — done
 
-Create an empty repo called **chester-county-washing** at
-[github.com/new](https://github.com/new) — no README, no .gitignore, no
-licence, since this folder already has all three. Then, from this folder:
+The code is pushed to
+[`Parsh22/chester-county-washing`](https://github.com/Parsh22/chester-county-washing).
+`.env`, `data/` and `.venv/` are gitignored, so no secrets and no customer
+data left the laptop.
 
-```bash
-git push -u origin main
-```
-
-The repo is already initialised, committed, and pointed at
-`https://github.com/Parsh22/chester-county-washing.git`. `.env`, `data/` and `.venv/`
-are gitignored, so no secrets or customer data leave your laptop.
-
-> A **public** repo is fine — there are no secrets in it. Make it private if
-> you'd rather; PythonAnywhere can clone either if you use a token.
+The repo is **private**, which matters for the next step: PythonAnywhere
+can't clone it without credentials. Two ways round that, in step 3.
 
 ### 2. Make a PythonAnywhere account
 
@@ -47,7 +40,24 @@ address, so pick something like `chestercountywashing`.
 
 ### 3. Clone and install
 
-Open **Consoles → Bash** and run:
+Open **Consoles → Bash**.
+
+Because the repo is private, a plain `git clone` will fail — GitHub stopped
+accepting account passwords over git years ago. Pick one of these:
+
+**Option A — make the repo public (simplest).** There is nothing secret in
+it: no passwords, no database, no customer details. On GitHub go to the repo
+→ **Settings** → scroll to **Danger Zone** → **Change visibility** →
+**Make public**. Then the plain clone below just works.
+
+**Option B — keep it private, use a read-only token.** On GitHub:
+**Settings → Developer settings → Personal access tokens → Fine-grained
+tokens → Generate new token**. Set *Repository access* to **Only select
+repositories → chester-county-washing**, and under *Repository permissions*
+set **Contents: Read-only**. Nothing else. Generate it and copy the token —
+it's shown once.
+
+Then, either way:
 
 ```bash
 git clone https://github.com/Parsh22/chester-county-washing.git
@@ -55,6 +65,13 @@ cd chester-county-washing
 python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
+
+With Option B the clone asks for a username and password: enter `Parsh22`
+and paste the **token** as the password. To avoid re-entering it on every
+`git pull`, run `git config credential.helper store` inside the repo
+afterwards — that writes the token in plain text to `~/.git-credentials` on
+your PythonAnywhere account, which is a fair trade for a read-only token
+scoped to one repo, but don't do it with a token that can write.
 
 ### 4. Create the .env on the server
 
