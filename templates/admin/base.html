@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ops{% endblock %} — {{ BUSINESS.name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+</head>
+<body>
+
+{% set here = request.endpoint or '' %}
+<header class="admin-bar no-print">
+  <div class="wrap">
+    <a class="logo" href="{{ url_for('admin.dashboard') }}">
+      <span class="mark" aria-hidden="true"></span>Ops
+    </a>
+    <nav class="nav" aria-label="Admin">
+      <a href="{{ url_for('admin.dashboard') }}"      class="{{ 'on' if here == 'admin.dashboard' }}">Today</a>
+      <a href="{{ url_for('admin.requests_list') }}"  class="{{ 'on' if 'request' in here }}">Requests</a>
+      <a href="{{ url_for('admin.schedule_view') }}"  class="{{ 'on' if here == 'admin.schedule_view' }}">Schedule</a>
+      <a href="{{ url_for('admin.crew_list') }}"      class="{{ 'on' if 'crew' in here }}">Crew</a>
+      <a href="{{ url_for('admin.customers_list') }}" class="{{ 'on' if 'customer' in here }}">Customers</a>
+      <a href="{{ url_for('public.home') }}">View site</a>
+      <a href="{{ url_for('admin.logout') }}">Log out</a>
+    </nav>
+  </div>
+</header>
+
+<main class="admin-main">
+  <div class="wrap">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block body %}{% endblock %}
+  </div>
+</main>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

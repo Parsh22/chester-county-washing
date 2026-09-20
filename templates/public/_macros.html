@@ -1,0 +1,25 @@
+{#
+  A before/after pair.
+
+  These come off a phone as one wide side-by-side image; import_photos.py
+  splits them so each half can be laid out properly with its own label. No
+  drag-slider: the two halves aren't shot from an identical position, so
+  wiping between them would look broken. Side by side is honest.
+#}
+
+{% macro shot_pair(shot, job, sizes='(max-width: 720px) 100vw, 480px') -%}
+<div class="pair">
+  <figure class="shot">
+    <img src="{{ url_for('static', filename=shot.before) }}" loading="lazy" sizes="{{ sizes }}"
+         width="1200" height="900"
+         alt="{{ shot.label }} of {{ job.title|lower }}, before washing">
+    <figcaption class="shot-tag">Before</figcaption>
+  </figure>
+  <figure class="shot">
+    <img src="{{ url_for('static', filename=shot.after) }}" loading="lazy" sizes="{{ sizes }}"
+         width="1200" height="900"
+         alt="The same {{ shot.label|lower }} after washing">
+    <figcaption class="shot-tag after">After</figcaption>
+  </figure>
+</div>
+{%- endmacro %}

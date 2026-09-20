@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% block title %}Requests{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <h1>Requests</h1>
+    <p class="muted small">{{ rows|length }} showing</p>
+  </div>
+  <form method="get" class="inline-form">
+    <input type="hidden" name="status" value="{{ status }}">
+    <div class="field field-sm grow">
+      <label for="q">Search</label>
+      <input id="q" type="search" name="q" value="{{ search }}" placeholder="Name, phone, code">
+    </div>
+    <button class="btn ghost" type="submit">Search</button>
+  </form>
+</div>
+
+<div class="tabs">
+  <a href="{{ url_for('admin.requests_list', status='open', q=search) }}"
+     class="{{ 'on' if status == 'open' }}">Open</a>
+  {% for key in REQUEST_STATUSES %}
+    <a href="{{ url_for('admin.requests_list', status=key, q=search) }}"
+       class="{{ 'on' if status == key }}">{{ STATUS_LABELS[key] }}</a>
+  {% endfor %}
+  <a href="{{ url_for('admin.requests_list', status='all', q=search) }}"
+     class="{{ 'on' if status == 'all' }}">All</a>
+</div>
+
+<div class="card flush">
+  {% if rows %}
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th><th>Customer</th><th>Services</th><th>Asked for</th>
+            <th class="right">Time</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td>
+                <a href="{{ url_for('admin.request_detail', request_id=row.id) }}">{{ row.code }}</a>
+                <span class="sub">{{ row.created_at[:10]|day }}</span>
+              </td>
+              <td>
+                {{ row.customer_name }}
+                <span class="sub">{{ row.town }} · {{ row.phone }}</span>
+              </td>
+              <td>
+                <span class="tag-list">
+                  {% for key in row.services.split(',') if key %}
+                    <span class="tag">{{ SERVICES[key].name }}</span>
+                  {% endfor %}
+                </span>
+                <span class="sub">{{ SIZES[row.size].name }}</span>
+              </td>
+              <td>
+                {{ row.preferred_day|day if row.preferred_day else 'Flexible' }}
+                {% if row.preferred_window != 'any' %}
+                  <span class="sub">{{ WINDOWS[row.preferred_window].name }}</span>
+                {% endif %}
+              </td>
+              <td class="right num">{{ row.duration_min|hours }}</td>
+              <td><span class="tag {{ row.status }}">{{ STATUS_LABELS[row.status] }}</span></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      {% if search %}
+        Nothing matches "{{ search }}".
+        <div><a class="btn ghost" href="{{ url_for('admin.requests_list') }}">Clear the search</a></div>
+      {% else %}
+        No requests with this status yet.
+        <div><a class="btn ghost" href="{{ url_for('admin.requests_list', status='all') }}">Show everything</a></div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

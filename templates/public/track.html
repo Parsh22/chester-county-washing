@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+
+{% block title %}Check your request — {{ BUSINESS.name }}{% endblock %}
+
+{% block body %}
+<section class="section">
+  <div class="wrap narrow">
+    <div class="card">
+      <h1>Check your request</h1>
+      <p class="muted">Enter the code from your confirmation — it looks like CW-4K2PM.</p>
+      <form method="get" class="inline-form mt-4">
+        <div class="field grow">
+          <label for="code">Request code</label>
+          <input id="code" type="text" name="code" value="{{ code }}" placeholder="CW-XXXXX"
+                 autocapitalize="characters" autocomplete="off" autofocus>
+        </div>
+        <button class="btn" type="submit">Look it up</button>
+      </form>
+      {% if not_found %}
+        <div class="flash error mt-4">
+          Nothing matches <b>{{ code }}</b>. Check the letters again, or call
+          <a href="tel:{{ BUSINESS.phone_link }}">{{ BUSINESS.phone }}</a>.
+        </div>
+      {% endif %}
+    </div>
+
+    {% if req %}
+      <div class="card">
+        <div class="card-head">
+          <h2>{{ req.code }}</h2>
+          <span class="tag {{ req.status }}">{{ STATUS_LABELS[req.status] }}</span>
+        </div>
+        <p class="small muted">For {{ req.customer_name }} · sent {{ req.created_at[:10]|day }}</p>
+
+        <table class="facts mt-4">
+          <tbody>
+            <tr>
+              <th>Services</th>
+              <td>
+                <span class="tag-list">
+                  {% for key in req.services.split(',') if key %}
+                    <span class="tag">{{ SERVICES[key].name }}</span>
+                  {% endfor %}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <th>Expected time on site</th>
+              <td class="num">{{ req.duration_min|hours }}</td>
+            </tr>
+            {% if appointment %}
+              <tr>
+                <th>Scheduled for</th>
+                <td class="num"><b>{{ appointment.day|day }}</b>,
+                  {{ appointment.start_min|time }} – {{ appointment.end_min|time }}</td>
+              </tr>
+              <tr>
+                <th>Who's coming</th>
+                <td>
+                  {{ appointment.crew_name }}
+                  {% if appointment.crew_phone %}<span class="sub">{{ appointment.crew_phone }}</span>{% endif %}
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+
+        <div class="flash {{ 'ok' if req.status in ['scheduled', 'completed'] else 'info' }} mt-5">
+          {% if req.status == 'new' %}
+            We have your request and nobody has picked it up yet. You'll hear from us within a day.
+          {% elif req.status == 'accepted' %}
+            We can take this one — we're working out who's free. Reply to our email with a
+            day that suits you and we'll lock it in.
+          {% elif req.status == 'scheduled' %}
+            You're on the calendar. We'll text the morning of.
+          {% elif req.status == 'completed' %}
+            All done — thanks. If something doesn't look right, call within a week and we'll come back.
+          {% else %}
+            This one was cancelled. Send a new request whenever.
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

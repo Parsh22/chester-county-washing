@@ -1,0 +1,32 @@
+# Render blueprint. Push this repo to GitHub, then on render.com pick
+# "New > Blueprint" and point it at the repo. Everything below is set up
+# for you, except ADMIN_PASSWORD which you type into the dashboard.
+#
+# The disk matters: without it SQLite lives on the container filesystem and
+# every deploy wipes your customers.
+
+services:
+  - type: web
+    name: chester-county-washing
+    runtime: python
+    plan: starter          # a disk requires a paid instance; "free" has no disk
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4
+    healthCheckPath: /
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_PATH
+        value: /var/data/app.db
+      - key: HTTPS_ONLY
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false        # Render prompts you for this on first deploy
+      - key: PYTHON_VERSION
+        value: "3.12.14"
+      # FLASK_DEBUG is deliberately absent: setting it would skip the
+      # startup check that stops the app booting with default secrets.

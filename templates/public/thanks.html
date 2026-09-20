@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+
+{% block title %}Request {{ req.code }} — {{ BUSINESS.name }}{% endblock %}
+
+{% block body %}
+<section class="section">
+  <div class="wrap narrow">
+    <div class="card center">
+      <h1>Got it.</h1>
+      <p class="muted">We'll work out who's free and email you a time within a day.
+        Nothing to pay and nothing else to do for now.</p>
+
+      <div class="estimate-box mt-5">
+        <p class="tiny muted mb-0">Your request code</p>
+        <div class="amount">{{ req.code }}</div>
+        <p class="tiny muted mb-0">Save this — it's how you check on the job.</p>
+      </div>
+
+      <table class="facts mt-5">
+        <tbody>
+          <tr>
+            <th>Expected time on site</th>
+            <td class="num">{{ req.duration_min|hours }}</td>
+          </tr>
+          <tr>
+            <th>You asked for</th>
+            <td>
+              {% if req.preferred_day %}
+                {{ req.preferred_day|day }}{% if req.preferred_window != 'any' %},
+                  {{ WINDOWS[req.preferred_window].label }}{% endif %}
+              {% else %}
+                No particular day — we'll send the soonest openings
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="row mid mt-5">
+        <a class="btn" href="{{ url_for('public.track', code=req.code) }}">Check status</a>
+        <a class="btn ghost" href="{{ url_for('public.home') }}#work">See our work</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>{{ icon('phone', 18) }} In a hurry?</h3>
+      <p class="small muted mb-0">Text or call <a href="tel:{{ BUSINESS.phone_link }}">{{ BUSINESS.phone }}</a>
+        and mention code <b>{{ req.code }}</b>. {{ BUSINESS.hours }}.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

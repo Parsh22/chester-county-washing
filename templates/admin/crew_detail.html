@@ -1,0 +1,179 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ member.name }}{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <p class="breadcrumb"><a href="{{ url_for('admin.crew_list') }}">← Crew</a></p>
+    <h1>{{ member.name }}</h1>
+    <p class="muted small">{{ member.phone or 'no phone' }} · {{ member.email or 'no email' }}</p>
+  </div>
+  <span class="tag {{ 'completed' if member.active else 'cancelled' }}">
+    {{ 'Active' if member.active else 'Inactive' }}
+  </span>
+</div>
+
+<div class="grid sidebar">
+  <div>
+
+    <div class="card">
+      <h2>Weekly hours</h2>
+      <p class="small muted">These repeat every week. The matcher only looks inside these blocks.</p>
+
+      <div class="mt-4">
+        {% for index in range(7) %}
+          <div class="hours-day">
+            <div class="dname">{{ WEEKDAYS[index] }}</div>
+            <div class="blocks">
+              {% for block in by_weekday[index] %}
+                <span class="hours-chip">
+                  {{ block.start_min|time }}–{{ block.end_min|time }}
+                  <form method="post"
+                        action="{{ url_for('admin.delete_availability', crew_id=member.id, block_id=block.id) }}">
+                    <button type="submit" title="Remove this block"
+                            aria-label="Remove {{ WEEKDAYS[index] }} {{ block.start_min|time }} block">×</button>
+                  </form>
+                </span>
+              {% else %}
+                <span class="tiny muted">not available</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <form method="post" action="{{ url_for('admin.add_availability', crew_id=member.id) }}"
+            class="mt-5">
+        <div class="field">
+          <label>Add hours on</label>
+          <div class="day-toggle">
+            {% for index in range(7) %}
+              <label><input type="checkbox" name="weekday" value="{{ index }}"> {{ WEEKDAYS[index][:3] }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="inline-form">
+          <div class="field field-xs">
+            <label for="start">From</label>
+            <input id="start" type="time" name="start" value="09:00">
+          </div>
+          <div class="field field-xs">
+            <label for="end">To</label>
+            <input id="end" type="time" name="end" value="17:00">
+          </div>
+          <button class="btn primary" type="submit">Add block</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card flush">
+      <div class="card-body">
+        <h2>Upcoming jobs</h2>
+        {% if upcoming %}
+          <div class="table-scroll mt-4">
+            <table>
+              <thead><tr><th>Day</th><th>Time</th><th>Customer</th><th>Address</th></tr></thead>
+              <tbody>
+                {% for job in upcoming %}
+                  <tr>
+                    <td class="num">{{ job.day|day }}</td>
+                    <td class="num">{{ job.start_min|time }}–{{ job.end_min|time }}</td>
+                    <td>
+                      <a href="{{ url_for('admin.request_detail', request_id=job.request_id) }}">{{ job.customer_name }}</a>
+                      <span class="sub">{{ job.code }}</span>
+                    </td>
+                    <td>{{ job.address }}<span class="sub">{{ job.town }}</span></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty">Nothing booked for {{ member.name.split()[0] }} yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h3>Details</h3>
+      <form method="post" class="mt-4">
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" type="text" name="name" value="{{ member.name }}">
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" type="tel" name="phone" value="{{ member.phone }}">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" name="email" value="{{ member.email }}">
+        </div>
+        <div class="field">
+          <label for="max_jobs_day">Max jobs per day</label>
+          <input id="max_jobs_day" type="number" name="max_jobs_day" min="1" max="6"
+                 value="{{ member.max_jobs_day }}">
+        </div>
+        <div class="field">
+          <label>Trained on</label>
+          <div class="check-list">
+            {% for key, service in SERVICES.items() %}
+              <label>
+                <input type="checkbox" name="skills" value="{{ key }}"
+                       {{ 'checked' if key in skills }}> {{ service.name }}
+              </label>
+            {% endfor %}
+          </div>
+          <p class="hint">Leave all unchecked if they'll do anything.</p>
+        </div>
+        <div class="field">
+          <div class="check-list">
+            <label>
+              <input type="checkbox" name="active" {{ 'checked' if member.active }}>
+              Available for new jobs
+            </label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" rows="3">{{ member.notes }}</textarea>
+        </div>
+        <button class="btn block" type="submit">Save</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>Days off</h3>
+      <div class="mt-4">
+        {% for off in time_off %}
+          <div class="list-row">
+            <span class="small">{{ off.day|day }}{% if off.reason %}
+              <span class="muted">· {{ off.reason }}</span>{% endif %}</span>
+            <form method="post" action="{{ url_for('admin.delete_time_off', crew_id=member.id, off_id=off.id) }}">
+              <button class="btn tiny ghost" type="submit" aria-label="Remove day off">×</button>
+            </form>
+          </div>
+        {% else %}
+          <p class="small muted">None on the books.</p>
+        {% endfor %}
+      </div>
+
+      <form method="post" action="{{ url_for('admin.add_time_off', crew_id=member.id) }}" class="mt-5">
+        <div class="field">
+          <label for="day">Date</label>
+          <input id="day" type="date" name="day" min="{{ today }}">
+        </div>
+        <div class="field">
+          <label for="reason">Reason</label>
+          <input id="reason" type="text" name="reason" placeholder="Away, exam, practice…">
+        </div>
+        <button class="btn ghost block" type="submit">Mark unavailable</button>
+      </form>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

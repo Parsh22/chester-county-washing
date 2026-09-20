@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+
+{% block title %}Request a wash — {{ BUSINESS.name }}{% endblock %}
+
+{% macro error(field) -%}
+  {% if errors.get(field) %}<div class="err-msg">{{ errors[field] }}</div>{% endif %}
+{%- endmacro %}
+
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="grid sidebar">
+
+      <form method="post" novalidate>
+        <div class="card">
+          <p class="eyebrow">Step 1 of 1</p>
+          <h1>Request a wash</h1>
+          <p class="muted">About a minute. Nothing is booked until we confirm with you.</p>
+
+          {% if errors %}
+            <div class="flash error mt-4">Fix the highlighted fields and send it again.</div>
+          {% endif %}
+
+          <h3 class="mt-6">What needs cleaning?</h3>
+          <div class="check-grid mt-4">
+            {% for key, service in SERVICES.items() %}
+              <label class="choice {{ 'on' if key in picked_services }}">
+                <input type="checkbox" name="services" value="{{ key }}"
+                       {{ 'checked' if key in picked_services }}>
+                <span>
+                  <span class="choice-title">{{ icon(service.icon, 18) }} {{ service.name }}</span>
+                  <span class="choice-note">{{ service.summary }}</span>
+                </span>
+              </label>
+            {% endfor %}
+          </div>
+          {{ error('services') }}
+
+          <h3 class="mt-6">How big is the property?</h3>
+          <div class="choice-row mt-4">
+            {% for key, size in SIZES.items() %}
+              <label class="choice {{ 'on' if form.size == key }}">
+                <input type="radio" name="size" value="{{ key }}"
+                       {{ 'checked' if form.size == key }}>
+                <span>
+                  <span class="choice-title">{{ size.name }}</span>
+                  <span class="choice-note">{{ size.hint }}</span>
+                </span>
+              </label>
+            {% endfor %}
+          </div>
+          {{ error('size') }}
+        </div>
+
+        <div class="card">
+          <h3>Where are we going?</h3>
+          <div class="grid two mt-4">
+            <div class="field {{ 'bad' if errors.get('name') }}">
+              <label for="name">Your name</label>
+              <input id="name" type="text" name="name" value="{{ form.name }}" autocomplete="name">
+              {{ error('name') }}
+            </div>
+            <div class="field {{ 'bad' if errors.get('phone') }}">
+              <label for="phone">Phone</label>
+              <input id="phone" type="tel" name="phone" value="{{ form.phone }}" autocomplete="tel">
+              {{ error('phone') }}
+            </div>
+          </div>
+
+          <div class="field {{ 'bad' if errors.get('email') }}">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" value="{{ form.email }}" autocomplete="email">
+            <p class="hint">Your confirmation and request code go here.</p>
+            {{ error('email') }}
+          </div>
+
+          <div class="field {{ 'bad' if errors.get('address') }}">
+            <label for="address">Street address</label>
+            <input id="address" type="text" name="address" value="{{ form.address }}"
+                   autocomplete="street-address">
+            {{ error('address') }}
+          </div>
+
+          <div class="grid two">
+            <div class="field {{ 'bad' if errors.get('town') }}">
+              <label for="town">Town</label>
+              <select id="town" name="town">
+                <option value="">Pick one…</option>
+                {% for town in BUSINESS.service_area %}
+                  <option value="{{ town }}" {{ 'selected' if form.town == town }}>{{ town }}</option>
+                {% endfor %}
+              </select>
+              {{ error('town') }}
+            </div>
+            <div class="field">
+              <label for="property_type">Property type</label>
+              <select id="property_type" name="property_type">
+                <option value="">Pick one…</option>
+                {% for option in PROPERTY_TYPES %}
+                  <option value="{{ option }}" {{ 'selected' if form.property_type == option }}>{{ option }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>When works for you?</h3>
+          <div class="grid two mt-4">
+            <div class="field {{ 'bad' if errors.get('preferred_day') }}">
+              <label for="preferred_day">Preferred day</label>
+              <input id="preferred_day" type="date" name="preferred_day"
+                     value="{{ form.preferred_day }}" min="{{ today }}">
+              <p class="hint">Leave it blank and we'll offer you the soonest openings.</p>
+              {{ error('preferred_day') }}
+            </div>
+            <div class="field">
+              <label for="preferred_window">Time of day</label>
+              <select id="preferred_window" name="preferred_window">
+                <option value="any" {{ 'selected' if form.preferred_window == 'any' }}>Any time</option>
+                {% for key, window in WINDOWS.items() %}
+                  <option value="{{ key }}" {{ 'selected' if form.preferred_window == key }}>
+                    {{ window.name }} — {{ window.label }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="details">Anything else we should know?</label>
+            <textarea id="details" name="details"
+              placeholder="Gate code, dog in the yard, the mossy part by the garage…">{{ form.details }}</textarea>
+          </div>
+
+          <button class="btn big" type="submit">Send my request</button>
+          <p class="hint">We're volunteers, so there's nothing to pay and no card needed.
+            Someone replies within a day.</p>
+        </div>
+      </form>
+
+      <aside class="stack">
+        <div class="card">
+          <h3>Time on site</h3>
+          <div class="estimate-box mt-4">
+            <div class="amount" id="est-amount">—</div>
+            <p class="small muted mb-0" id="est-note">Pick a service to see how long it takes.</p>
+          </div>
+          <p class="tiny muted mt-4">Roughly how long someone will be at your place, based on
+            the size you picked. It's what we block off on their calendar.</p>
+        </div>
+
+        <div class="card">
+          <h3>Why it varies</h3>
+          <p class="small muted">Two "medium" driveways can be very different. Oil stains,
+            fifteen years of algae and a slope all change how long it takes. We'd rather
+            over-book the time than turn up and have to rush.</p>
+        </div>
+
+        <div class="card">
+          <h3>Already sent one?</h3>
+          <p class="small muted">Look it up with your code instead of calling.</p>
+          <p class="mt-4 mb-0">
+            <a class="btn ghost block" href="{{ url_for('public.track') }}">Check my request</a>
+          </p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Keeps the sidebar time preview in step with the form. The same maths runs
+// on the server when you submit, so this is only ever a preview.
+(function () {
+  var form = document.querySelector('form');
+  var amount = document.getElementById('est-amount');
+  var note = document.getElementById('est-note');
+
+  function highlight() {
+    form.querySelectorAll('.choice').forEach(function (label) {
+      label.classList.toggle('on', label.querySelector('input').checked);
+    });
+  }
+
+  async function refresh() {
+    highlight();
+
+    var params = new URLSearchParams();
+    form.querySelectorAll('input[name=services]:checked').forEach(function (input) {
+      params.append('services', input.value);
+    });
+    var size = form.querySelector('input[name=size]:checked');
+    if (size) params.set('size', size.value);
+
+    if (!params.getAll('services').length) {
+      amount.textContent = '—';
+      note.textContent = 'Pick a service to see how long it takes.';
+      return;
+    }
+
+    try {
+      var res = await fetch('{{ url_for("public.api_duration") }}?' + params.toString());
+      var data = await res.json();
+      var hours = Math.round(data.duration_min / 30) / 2;
+      amount.textContent = hours + (hours === 1 ? ' hour' : ' hours');
+      note.textContent = 'Roughly how long someone will be there.';
+    } catch (err) {
+      note.textContent = 'Could not work that out right now — send it anyway.';
+    }
+  }
+
+  form.addEventListener('change', refresh);
+  refresh();
+})();
+</script>
+{% endblock %}

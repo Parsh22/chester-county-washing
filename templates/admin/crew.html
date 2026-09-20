@@ -1,0 +1,89 @@
+{% extends "admin/base.html" %}
+{% block title %}Crew{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <h1>Crew</h1>
+    <p class="muted small">Anyone on this list with hours set can be matched to a job.</p>
+  </div>
+</div>
+
+<div class="grid sidebar">
+  <div class="card flush">
+    <div class="card-body">
+      {% if members %}
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Contact</th><th>Hours set</th><th class="right">This week</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {% for member in members %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('admin.crew_detail', crew_id=member.id) }}">{{ member.name }}</a>
+                    <span class="sub">max {{ member.max_jobs_day }} job{{ '' if member.max_jobs_day == 1 else 's' }}/day</span>
+                  </td>
+                  <td>{{ member.phone or '—' }}<span class="sub">{{ member.email }}</span></td>
+                  <td>
+                    {% if member.blocks %}
+                      <span class="tag">{{ member.blocks }} block{{ '' if member.blocks == 1 else 's' }}</span>
+                    {% else %}
+                      <span class="tag warn">none yet</span>
+                    {% endif %}
+                  </td>
+                  <td class="right num">{{ member.jobs_week }}</td>
+                  <td>
+                    <span class="tag {{ 'completed' if member.active else 'cancelled' }}">
+                      {{ 'Active' if member.active else 'Inactive' }}
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty">Nobody on the crew yet — add your first person on the right.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h3>Add someone</h3>
+      <form method="post" class="mt-4">
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" type="text" name="name" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" type="tel" name="phone">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" name="email">
+        </div>
+        <div class="field">
+          <label for="max_jobs_day">Max jobs per day</label>
+          <input id="max_jobs_day" type="number" name="max_jobs_day" value="2" min="1" max="6">
+          <p class="hint">The matcher won't book past this.</p>
+        </div>
+        <button class="btn block" type="submit">Add to crew</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>How matching works</h3>
+      <p class="small muted mb-0">For a given day we skip anyone inactive, off that day,
+        already at their daily limit, or not trained on the service. Out of who's left we take
+        the first open slot that fits the job plus {{ TRAVEL_BUFFER_MIN }} minutes of travel on
+        each side, then sort by who's had the lightest week.</p>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

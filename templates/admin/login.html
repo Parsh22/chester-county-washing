@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Team login — {{ BUSINESS.name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+</head>
+<body class="login-page">
+  <main class="login-box">
+    <div class="card">
+      <span class="logo"><span class="mark" aria-hidden="true"></span>{{ BUSINESS.name }}</span>
+      <h1 class="mt-5">Team login</h1>
+      <p class="muted small">This is the ops side. Customers don't come here.</p>
+      {% if error %}<div class="flash error mt-4">{{ error }}</div>{% endif %}
+      <form method="post" class="mt-5">
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" name="password" autofocus
+                 autocomplete="current-password">
+        </div>
+        <button class="btn block" type="submit">Log in</button>
+      </form>
+    </div>
+    <p class="center small mt-4"><a href="{{ url_for('public.home') }}">← Back to the website</a></p>
+  </main>
+</body>
+</html>

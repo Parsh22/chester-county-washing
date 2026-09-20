@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+
+{% block title %}What we do — {{ BUSINESS.name }}{% endblock %}
+
+{% block body %}
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">What we do</p>
+      <h1>Services</h1>
+      <p class="muted">The thing worth planning around is how long someone will be at your
+        place. These are honest averages, not best cases. Ask for two things on one visit and
+        the second goes quicker, because the gear is already out.</p>
+    </div>
+
+    <div class="card flush">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th class="right">Small</th>
+              <th class="right">Medium</th>
+              <th class="right">Large</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for key, service in SERVICES.items() %}
+              <tr>
+                <td>
+                  <b>{{ service.name }}</b>
+                  <span class="sub">{{ service.summary }}</span>
+                </td>
+                {% for size in ['small', 'medium', 'large'] %}
+                  <td class="right num">{{ service.minutes[size]|hours }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid three mt-4">
+      {% for key, size in SIZES.items() %}
+        <div class="card">
+          <h3>{{ size.name }}</h3>
+          <p class="small muted">{{ size.hint }}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="grid two mt-4">
+      <div class="card">
+        <h3>What's included</h3>
+        <ul class="list small muted mt-4">
+          <li>Pre-rinse and a detergent pass wherever it needs one</li>
+          <li>Moving planters, hoses and furniture out of the way, then back</li>
+          <li>Wetting down plants first and rinsing them after, so nothing bleaches</li>
+          <li>A walkthrough with you before we pack up</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What we don't do</h3>
+        <ul class="list small muted mt-4">
+          <li>Anything needing a ladder above one story</li>
+          <li>Walking on roofs — roof work is soft wash from the ground only</li>
+          <li>Painted or stained wood that's already peeling</li>
+          <li>Anything bigger than a house or a small community space</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mt-4">
+      <h3>{{ icon('clock', 20) }} A note on waiting</h3>
+      <p class="small muted mb-0">There are only a few of us and we're all in school, so
+        weekends book up first. If you're flexible about the day you'll usually get in
+        sooner — and if we can't reach you for a while, it's because someone's mid-job, not
+        because we forgot.</p>
+    </div>
+
+    <div class="cta-band mt-7">
+      <h2>Somewhere on this list sound like your place?</h2>
+      <p>Tell us the address and what needs doing. You'll see the expected time as you type.</p>
+      <p class="mt-5 mb-0"><a class="btn big" href="{{ url_for('public.book') }}">Request a wash</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

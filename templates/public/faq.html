@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ — {{ BUSINESS.name }}{% endblock %}
+
+{% block body %}
+<section class="section">
+  <div class="wrap narrow">
+    <div class="section-head">
+      <p class="eyebrow">FAQ</p>
+      <h1>Questions we get a lot</h1>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <h3>Is there really a catch?</h3>
+        <p class="small muted mb-0">No. We're a volunteer group — local students who already
+          had the equipment and wanted something better to do with a Saturday. Nobody is going
+          to hand you an invoice or try to sell you a maintenance plan afterwards.</p>
+      </div>
+
+      <div class="card">
+        <h3>Who actually shows up?</h3>
+        <p class="small muted mb-0">Someone from our crew — all local, mostly high school and
+          college students. You get their name and number before the day, and it's the same
+          person start to finish.</p>
+      </div>
+
+      <div class="card">
+        <h3>How do you pick a time?</h3>
+        <p class="small muted mb-0">Everyone sets the hours they're free to volunteer. When
+          your request comes in we check who's open on the day you asked for, who isn't already
+          booked, and who's had the lightest week, then offer you that slot. If nothing fits we
+          send you the next few openings instead.</p>
+      </div>
+
+      <div class="card">
+        <h3>Do I need to be home?</h3>
+        <p class="small muted mb-0">Not for outside work, as long as we can reach an outdoor
+          spigot and the gate is open. Put the code or the dog in the notes on the form.</p>
+      </div>
+
+      <div class="card">
+        <h3>What about my plants?</h3>
+        <p class="small muted mb-0">We wet them down before and rinse them after. Point out
+          anything delicate and we'll tarp it.</p>
+      </div>
+
+      <div class="card">
+        <h3>What if it rains?</h3>
+        <p class="small muted mb-0">We text the night before and move you to the next open
+          slot. Rescheduling is never a problem — we'd rather do it properly.</p>
+      </div>
+
+      <div class="card">
+        <h3>Are you insured?</h3>
+        <p class="small muted mb-0">We carry general liability through our parents' policy for
+          residential work in our service area. Ask and we'll send the certificate.</p>
+      </div>
+
+      <div class="card">
+        <h3>My town isn't on the list.</h3>
+        <p class="small muted mb-0">Call anyway — {{ BUSINESS.phone }}. If it's a short drive
+          and you're flexible on the day, we can usually make it work.</p>
+      </div>
+
+      <div class="card">
+        <h3>Can I join the crew?</h3>
+        <p class="small muted mb-0">Yes, and we need people. You don't need experience —
+          you need a free afternoon now and then and to not mind getting soaked. Email
+          {{ BUSINESS.email }} and tell us which days you're around.</p>
+      </div>
+    </div>
+
+    <div class="cta-band mt-7">
+      <h2>Still wondering something?</h2>
+      <p>Text {{ BUSINESS.phone }} or email {{ BUSINESS.email }}.</p>
+      <p class="mt-5 mb-0"><a class="btn big" href="{{ url_for('public.book') }}">Or just send a request</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

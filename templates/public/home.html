@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% from "public/_macros.html" import shot_pair %}
+
+{% block title %}{{ BUSINESS.name }} — free volunteer pressure washing in {{ BUSINESS.region }}{% endblock %}
+
+{% block body %}
+
+<section class="hero">
+  <div class="wrap hero-solo">
+    <p class="eyebrow">Volunteer run · {{ BUSINESS.region }}</p>
+    <h1>Your deck is a different color under all that.</h1>
+    <p class="lead">{{ BUSINESS.blurb }}</p>
+    <div class="row mid">
+      <a class="btn big" href="{{ url_for('public.book') }}">Request a wash</a>
+      <a class="btn big ghost" href="tel:{{ BUSINESS.phone_link }}">
+        {{ icon('phone', 18) }} {{ BUSINESS.phone }}
+      </a>
+    </div>
+    <div class="hero-points">
+      <div><b>Under 24h</b>Typical reply</div>
+      <div><b>{{ BUSINESS.service_area|length }} towns</b>Where we go</div>
+      <div><b>Since {{ BUSINESS.founded }}</b>Same local crew</div>
+    </div>
+  </div>
+</section>
+
+<section class="section alt" id="work">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Our work</p>
+      <h2>We've only just started taking photos</h2>
+      <p class="muted">Here's the one job we remembered to shoot properly, start to finish.
+        We'll add more as we go — no stock pictures, no other people's driveways.</p>
+    </div>
+
+    {% for job in WORK %}
+      <div class="job">
+        <div class="job-head">
+          <h3>{{ icon(SERVICES[job.service].icon, 20) }} {{ job.title }}</h3>
+          <p class="muted prose mb-0">{{ job.summary }}</p>
+        </div>
+
+        {% for shot in job.shots %}
+          <div class="shot-row">
+            <div class="shot-label">
+              <b>{{ shot.label }}</b>
+              <span>{{ shot.note }}</span>
+            </div>
+            {{ shot_pair(shot, job) }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">What we clean</p>
+      <h2>Six things, done properly</h2>
+      <p class="muted">Roughly how long each takes at an average house, so you know what
+        you're giving up your morning for. Bigger properties take longer.</p>
+    </div>
+
+    <div class="grid three">
+      {% for key, service in SERVICES.items() %}
+        <article class="service-card">
+          <span class="service-icon">{{ icon(service.icon, 22) }}</span>
+          <h3>{{ service.name }}</h3>
+          <p class="small muted">{{ service.summary }}</p>
+          <p class="card-meta">{{ icon('clock', 15) }} usually <b>{{ service.minutes.medium|hours }}</b></p>
+        </article>
+      {% endfor %}
+    </div>
+
+    <p class="mt-5">
+      <a class="textlink" href="{{ url_for('public.services') }}">
+        See what's included in each one {{ icon('arrow', 16) }}
+      </a>
+    </p>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="wrap grid split">
+    <div>
+      <p class="eyebrow">How it works</p>
+      <h2>No phone tag, no waiting around all Saturday</h2>
+      <p class="muted">The awkward part of getting help with something like this is never
+        knowing when anyone will actually turn up. We fixed that part first.</p>
+      <p class="mt-4">
+        <a class="btn primary" href="{{ url_for('public.book') }}">Start a request</a>
+      </p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <h3>Tell us what's dirty</h3>
+          <p class="small muted">About a minute of typing, and you see how long it'll take
+            before you send it.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <h3>We match you with whoever's free</h3>
+          <p class="small muted">Everyone on the team volunteers different hours around school
+            and practice. We check who's genuinely open on your day instead of guessing.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <h3>You get a name and a time</h3>
+          <p class="small muted">Not "sometime Tuesday" — the person coming, the day, and a
+            window you can look up any time with your code.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <h3>We walk it with you before we go</h3>
+          <p class="small muted">If we've missed a patch, say so while we've still got the
+            hose out and we'll go back over it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap grid two">
+    <div class="card">
+      <h3>{{ icon('pin', 20) }} Where we go</h3>
+      <p class="small muted">On the edge of one of these? Ask anyway — we usually still will.</p>
+      <div class="pill-list mt-4">
+        {% for town in BUSINESS.service_area %}
+          <span class="pill">{{ town }}</span>
+        {% endfor %}
+      </div>
+      <h3 class="mt-6">Why we do it</h3>
+      <p class="small muted mb-0">{{ BUSINESS.mission }}</p>
+    </div>
+    <div class="card">
+      <h3>{{ icon('clock', 20) }} What the day looks like</h3>
+      <ul class="list small muted mt-4">
+        <li>We text that morning with a rough arrival time.</li>
+        <li>We'll need an outdoor spigot and a way into the back if the gate's locked.</li>
+        <li>Planters, hoses and furniture get moved out of the way, then put back.</li>
+        <li>Plants get wet down first and rinsed after so nothing bleaches.</li>
+        <li>We walk it with you before we pack up, in case we've missed a patch.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Ready for your own before-and-after?</h2>
+      <p>Tell us what needs cleaning. We'll say honestly if we think it doesn't need doing, or
+        if it's past what we can safely reach.</p>
+      <p class="mt-5 mb-0"><a class="btn big" href="{{ url_for('public.book') }}">Request a wash</a></p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

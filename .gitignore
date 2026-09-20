@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+data/
+.env
+.ca-bundle.pem
+.DS_Store

@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ customer.name }}{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <p class="breadcrumb"><a href="{{ url_for('admin.customers_list') }}">← Customers</a></p>
+    <h1>{{ customer.name }}</h1>
+    <p class="muted small">Customer since {{ customer.created_at[:10]|day }}</p>
+  </div>
+  <a class="btn ghost"
+     href="https://maps.google.com/?q={{ (customer.address ~ ', ' ~ customer.town)|urlencode }}"
+     target="_blank" rel="noopener">{{ icon('pin', 16) }} Open in Maps</a>
+</div>
+
+<div class="grid sidebar">
+  <div class="card flush">
+    <div class="card-body">
+      <h2>Request history</h2>
+      {% if rows %}
+        <div class="table-scroll mt-4">
+          <table>
+            <thead>
+              <tr><th>Code</th><th>When</th><th>Services</th><th class="right">Time</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+                <tr>
+                  <td><a href="{{ url_for('admin.request_detail', request_id=row.id) }}">{{ row.code }}</a></td>
+                  <td class="num">{{ row.created_at[:10]|day }}</td>
+                  <td>
+                    {% for key in row.services.split(',') if key %}{{ SERVICES[key].name }}{{ ', ' if not loop.last }}{% endfor %}
+                  </td>
+                  <td class="right num">{{ row.duration_min|hours }}</td>
+                  <td><span class="tag {{ row.status }}">{{ STATUS_LABELS[row.status] }}</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty">No requests yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h3>Contact</h3>
+      <p class="small mt-4">
+        <a href="tel:{{ customer.phone }}">{{ customer.phone }}</a><br>
+        <a href="mailto:{{ customer.email }}">{{ customer.email }}</a>
+      </p>
+      <p class="small muted mb-0">{{ customer.address }}<br>{{ customer.town }}</p>
+    </div>
+
+    <div class="card">
+      <h3>Private notes</h3>
+      <form method="post" class="mt-4">
+        <div class="field">
+          <textarea name="notes" rows="6"
+            placeholder="Gate code, where the spigot is, likes plenty of notice…">{{ customer.notes }}</textarea>
+          <p class="hint">Only the team sees this. It shows on every job for them.</p>
+        </div>
+        <button class="btn block" type="submit">Save notes</button>
+      </form>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends "admin/base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}{{ req.code }}{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <p class="breadcrumb"><a href="{{ url_for('admin.requests_list') }}">← All requests</a></p>
+    <h1>{{ req.code }}</h1>
+    <p class="muted small">
+      <span class="tag {{ req.status }}">{{ STATUS_LABELS[req.status] }}</span>
+      · came in {{ req.created_at[:10]|day }} via {{ req.source }}
+    </p>
+  </div>
+  <form method="post" action="{{ url_for('admin.set_status', request_id=req.id) }}" class="inline-form">
+    <div class="field field-sm">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        {% for key in REQUEST_STATUSES %}
+          <option value="{{ key }}" {{ 'selected' if req.status == key }}>{{ STATUS_LABELS[key] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn ghost" type="submit">Update</button>
+  </form>
+</div>
+
+<div class="grid sidebar">
+  <div>
+
+    <div class="card">
+      <h2>The job</h2>
+      <table class="facts mt-4">
+        <tbody>
+          <tr>
+            <th>Services</th>
+            <td>
+              <span class="tag-list">
+                {% for key in service_keys %}
+                  <span class="tag">{{ SERVICES[key].name }}</span>
+                {% endfor %}
+              </span>
+              <span class="sub">{{ SIZES[req.size].name }} property · blocking
+                {{ (req.duration_min / 60)|round(1) }} hrs</span>
+            </td>
+          </tr>
+          <tr>
+            <th>Customer asked for</th>
+            <td>
+              {{ req.preferred_day|day if req.preferred_day else 'No preference' }}
+              {% if req.preferred_window != 'any' %} · {{ WINDOWS[req.preferred_window].label }}{% endif %}
+            </td>
+          </tr>
+          {% if req.property_type %}
+            <tr><th>Property type</th><td>{{ req.property_type }}</td></tr>
+          {% endif %}
+          {% if req.details %}
+            <tr><th>Their notes</th><td>{{ req.details }}</td></tr>
+          {% endif %}
+          <tr>
+            <th>Expected time on site</th>
+            <td class="num">{{ req.duration_min|hours }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {% if req.status == 'new' %}
+        <form method="post" action="{{ url_for('admin.accept_request', request_id=req.id) }}"
+              class="mt-5">
+          <button class="btn primary" type="submit">Accept this request</button>
+          <p class="hint">Marks it as one we'll take. Find them a slot below.</p>
+        </form>
+      {% endif %}
+    </div>
+
+    {% if appointments %}
+      <div class="card">
+        <h2>Visits</h2>
+        <div class="mt-4">
+          {% for appointment in appointments %}
+            <div class="match {{ 'best' if appointment.status == 'scheduled' }}">
+              <span class="avatar">{{ appointment.crew_name[0] }}</span>
+              <div class="grow">
+                <div class="who">{{ appointment.crew_name }}</div>
+                <div class="when">
+                  {{ appointment.day|day }} · {{ appointment.start_min|time }}–{{ appointment.end_min|time }}
+                  {%- if appointment.crew_phone %} · {{ appointment.crew_phone }}{% endif %}
+                </div>
+              </div>
+              <span class="tag {{ appointment.status }}">{{ appointment.status }}</span>
+              {% if appointment.status == 'scheduled' %}
+                <form method="post" action="{{ url_for('admin.appointment_action', appointment_id=appointment.id, action='complete') }}">
+                  <button class="btn tiny ghost" type="submit">Done</button>
+                </form>
+                <form method="post" action="{{ url_for('admin.appointment_action', appointment_id=appointment.id, action='cancel') }}">
+                  <button class="btn tiny danger" type="submit">Cancel</button>
+                </form>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Who can take it</h2>
+        <form method="get" class="inline-form">
+          <div class="field field-sm">
+            <label for="day">Day</label>
+            <input id="day" type="date" name="day" value="{{ day }}">
+          </div>
+          <div class="field field-sm">
+            <label for="window">Window</label>
+            <select id="window" name="window">
+              <option value="any" {{ 'selected' if window == 'any' }}>Any time</option>
+              {% for key, w in WINDOWS.items() %}
+                <option value="{{ key }}" {{ 'selected' if window == key }}>{{ w.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button class="btn ghost" type="submit">Check</button>
+        </form>
+      </div>
+
+      {% if not day %}
+        <div class="empty">Pick a day above to see who's free.</div>
+      {% elif matches %}
+        <p class="small muted">Sorted by who's had the lightest week. Booking blocks
+          {{ (req.duration_min / 60)|round(1) }} hrs plus {{ TRAVEL_BUFFER_MIN }} min travel either side.</p>
+        <div class="mt-4">
+          {% for match in matches %}
+            <div class="match {{ 'best' if loop.first }}">
+              <span class="avatar">{{ match.crew.name[0] }}</span>
+              <div class="grow">
+                <div class="who">
+                  {{ match.crew.name }}
+                  {% if loop.first %}<span class="tag scheduled">best fit</span>{% endif %}
+                </div>
+                <div class="when">
+                  Free {{ match.start_min|time }}–{{ match.end_min|time }} ·
+                  {{ match.jobs_week }} job{{ '' if match.jobs_week == 1 else 's' }} this week ·
+                  {{ match.jobs_today }} today
+                </div>
+              </div>
+              <form method="post" action="{{ url_for('admin.schedule', request_id=req.id) }}">
+                <input type="hidden" name="crew_id" value="{{ match.crew.id }}">
+                <input type="hidden" name="day" value="{{ day }}">
+                <input type="hidden" name="start_min" value="{{ match.start_min }}">
+                <button class="btn primary" type="submit">Book</button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="flash error">
+          Nobody is free on {{ day|day }}{% if window != 'any' %}
+            in the {{ WINDOWS[window].name|lower }}{% endif %}.
+        </div>
+        {% if alternatives %}
+          <h3 class="mt-5">Next openings</h3>
+          <p class="small muted">Offer the customer one of these instead.</p>
+          <div class="mt-4">
+            {% for option in alternatives %}
+              <div class="match">
+                <div class="grow">
+                  <div class="who">{{ option.day|day }}</div>
+                  <div class="when">
+                    {{ option.matches|length }} free ·
+                    first is {{ option.matches[0].crew.name }} at {{ option.matches[0].start_min|time }}
+                  </div>
+                </div>
+                <a class="btn ghost" href="{{ url_for('admin.request_detail', request_id=req.id, day=option.day, window=window) }}">
+                  Look at this day
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="small muted">Nothing open in the next three weeks either — somebody needs
+            to add hours on the <a href="{{ url_for('admin.crew_list') }}">crew page</a>.</p>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Log</h2>
+      <form method="post" action="{{ url_for('admin.add_note', request_id=req.id) }}"
+            class="inline-form mt-4 mb-4">
+        <div class="field grow">
+          <label for="body">Add a note</label>
+          <input id="body" type="text" name="body" placeholder="Called them, left a voicemail…">
+        </div>
+        <button class="btn ghost" type="submit">Add</button>
+      </form>
+      <ul class="timeline">
+        {% for entry in activity %}
+          <li class="{{ entry.kind }}">
+            {{ entry.body }}
+            <div class="when">{{ entry.created_at.replace('T', ' at ')[:19] }}</div>
+          </li>
+        {% else %}
+          <li class="muted small">Nothing logged yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h3>Customer</h3>
+      <p class="mt-4">
+        <a href="{{ url_for('admin.customer_detail', customer_id=req.customer_id) }}">
+          <b>{{ req.customer_name }}</b></a><br>
+        <a href="tel:{{ req.phone }}">{{ req.phone }}</a><br>
+        <a href="mailto:{{ req.email }}">{{ req.email }}</a>
+      </p>
+      <p class="small muted">{{ req.address }}<br>{{ req.town }}</p>
+      <p class="mb-0">
+        <a class="btn ghost block"
+           href="https://maps.google.com/?q={{ (req.address ~ ', ' ~ req.town)|urlencode }}"
+           target="_blank" rel="noopener">{{ icon('pin', 16) }} Open in Maps</a>
+      </p>
+      {% if req.customer_notes %}
+        <p class="small muted mt-4"><b>Note:</b> {{ req.customer_notes }}</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h3>Copy for the customer</h3>
+      <textarea class="copy-box mt-4" readonly>{% if appointments and appointments[0].status == 'scheduled' -%}
+Hi {{ req.customer_name.split()[0] }} — you're booked for {{ appointments[0].day|day }} between {{ appointments[0].start_min|time }} and {{ appointments[0].end_min|time }}. {{ appointments[0].crew_name }} will be the one coming out, and they'll be there about {{ req.duration_min|hours }}. Nothing to pay. Your code is {{ req.code }} if you need to look it up.
+{%- else -%}
+Hi {{ req.customer_name.split()[0] }} — thanks for getting in touch. We can take care of the {% for key in service_keys %}{{ SERVICES[key].name|lower }}{{ ' and ' if loop.revindex == 2 else (', ' if not loop.last) }}{% endfor %} at {{ req.address }}. It's about {{ req.duration_min|hours }} of work, so let us know a day that suits you and we'll match you with whoever on the team is free. Your code is {{ req.code }}.
+{%- endif %}</textarea>
+      <p class="hint">Select all and paste into your email or texts.</p>
+    </div>
+
+    {% if history %}
+      <div class="card">
+        <h3>Their other jobs</h3>
+        <div class="mt-4">
+          {% for row in history %}
+            <div class="list-row">
+              <a href="{{ url_for('admin.request_detail', request_id=row.id) }}">{{ row.code }}</a>
+              <span class="tag {{ row.status }}">{{ STATUS_LABELS[row.status] }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </aside>
+</div>
+
+{% endblock %}

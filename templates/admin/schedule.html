@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+{% block title %}Schedule{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <h1>Week of {{ monday.strftime('%B %-d') }}</h1>
+    <p class="muted small">Everything booked, by day. Print this for the fridge.</p>
+  </div>
+  <div class="actions no-print">
+    <a class="btn ghost" href="{{ url_for('admin.schedule_view', day=prev_week) }}">← Prev</a>
+    <a class="btn ghost" href="{{ url_for('admin.schedule_view') }}">This week</a>
+    <a class="btn ghost" href="{{ url_for('admin.schedule_view', day=next_week) }}">Next →</a>
+  </div>
+</div>
+
+<div class="week">
+  {% for day in days %}
+    <div class="week-day {{ 'today' if day == today }}">
+      <div class="dow">{{ day.strftime('%a') }}</div>
+      <div class="dom">{{ day.strftime('%-d') }}</div>
+      {% for job in by_day[day.isoformat()] %}
+        <a class="job-chip" href="{{ url_for('admin.request_detail', request_id=job.request_id) }}">
+          <b>{{ job.start_min|time }} · {{ job.crew_name }}</b>
+          {{ job.customer_name }}<br>
+          <span class="muted">{{ job.town }}</span>
+        </a>
+      {% else %}
+        <div class="tiny muted">—</div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+
+<div class="card flush mt-5">
+  <div class="card-body">
+    <h2>Run sheet</h2>
+    {% set all_jobs = [] %}
+    {% for day in days %}{% for job in by_day[day.isoformat()] %}{% set _ = all_jobs.append((day, job)) %}{% endfor %}{% endfor %}
+
+    {% if all_jobs %}
+      <div class="table-scroll mt-4">
+        <table>
+          <thead>
+            <tr><th>Day</th><th>Time</th><th>Crew</th><th>Customer</th><th>Address</th><th>Job</th><th class="right">Length</th></tr>
+          </thead>
+          <tbody>
+            {% for day, job in all_jobs %}
+              <tr>
+                <td class="num">{{ day.strftime('%a %-d') }}</td>
+                <td class="num"><b>{{ job.start_min|time }}</b><span class="sub">{{ job.end_min|time }}</span></td>
+                <td>{{ job.crew_name }}</td>
+                <td>
+                  <a href="{{ url_for('admin.request_detail', request_id=job.request_id) }}">{{ job.customer_name }}</a>
+                  <span class="sub">{{ job.phone }}</span>
+                </td>
+                <td>{{ job.address }}<span class="sub">{{ job.town }}</span></td>
+                <td class="tiny">
+                  {% for key in job.services.split(',') if key %}{{ SERVICES[key].name }}{{ ', ' if not loop.last }}{% endfor %}
+                </td>
+                <td class="right num">{{ (job.end_min - job.start_min)|hours }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">
+        Nothing booked this week yet.
+        <div><a class="btn ghost" href="{{ url_for('admin.requests_list', status='accepted') }}">Find something to schedule</a></div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

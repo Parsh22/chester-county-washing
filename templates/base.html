@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ BUSINESS.name }} — {{ BUSINESS.region }}{% endblock %}</title>
+  <meta name="description" content="{{ BUSINESS.blurb }}">
+  <meta name="theme-color" content="#0d2531">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="{{ url_for('public.home') }}">
+      <span class="mark" aria-hidden="true"></span>{{ BUSINESS.name }}
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="{{ url_for('public.services') }}" class="{{ 'on' if request.endpoint == 'public.services' }}">Services</a>
+      <a href="{{ url_for('public.home') }}#work">Our work</a>
+      <a href="{{ url_for('public.faq') }}" class="{{ 'on' if request.endpoint == 'public.faq' }}">FAQ</a>
+      <a href="{{ url_for('public.track') }}" class="{{ 'on' if request.endpoint == 'public.track' }}">Check status</a>
+      <a class="btn" href="{{ url_for('public.book') }}">Request a wash</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  {% block body %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <span class="logo"><span class="mark" aria-hidden="true"></span>{{ BUSINESS.name }}</span>
+        <p class="mt-3">{{ BUSINESS.blurb }}</p>
+      </div>
+      <div>
+        <h4>Get in touch</h4>
+        <div class="footer-links">
+          <a href="tel:{{ BUSINESS.phone_link }}">{{ BUSINESS.phone }}</a>
+          <a href="mailto:{{ BUSINESS.email }}">{{ BUSINESS.email }}</a>
+          <span class="tiny">{{ BUSINESS.hours }}</span>
+        </div>
+      </div>
+      <div>
+        <h4>Pages</h4>
+        <div class="footer-links">
+          <a href="{{ url_for('public.services') }}">What we do</a>
+          <a href="{{ url_for('public.home') }}#work">Our work</a>
+          <a href="{{ url_for('public.book') }}">Request a wash</a>
+          <a href="{{ url_for('public.track') }}">Check a request</a>
+          <a href="{{ url_for('public.faq') }}">FAQ</a>
+          <a href="{{ url_for('admin.dashboard') }}">Team login</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      A volunteer group in {{ BUSINESS.region }}, serving
+      {{ BUSINESS.service_area[:-1]|join(', ') }} and {{ BUSINESS.service_area[-1] }}
+      since {{ BUSINESS.founded }}.
+    </div>
+  </div>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+{% from "_icons.html" import icon %}
+{% block title %}Today{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <h1>{{ today.strftime('%A, %B %-d') }}</h1>
+    <p class="muted small">Everything that needs a human today.</p>
+  </div>
+  <div class="actions no-print">
+    <a class="btn ghost" href="{{ url_for('admin.export_requests') }}">Export CSV</a>
+    <a class="btn" href="{{ url_for('admin.requests_list', status='new') }}">
+      {{ counts.new }} new request{{ '' if counts.new == 1 else 's' }}
+    </a>
+  </div>
+</div>
+
+<div class="grid four">
+  <div class="stat"><div class="n">{{ counts.new }}</div><div class="k">New leads</div></div>
+  <div class="stat"><div class="n">{{ counts.accepted }}</div><div class="k">Accepted, not booked</div></div>
+  <div class="stat"><div class="n">{{ counts.scheduled }}</div><div class="k">Booked</div></div>
+  <div class="stat"><div class="n">{{ hours_this_week|hours }}</div><div class="k">Volunteer hours this week</div></div>
+</div>
+
+{% if stale %}
+  <div class="flash error mt-4">
+    {{ stale|length }} request{{ '' if stale|length == 1 else 's' }} asked for a day that has
+    already passed and still isn't booked:
+    {% for row in stale %}
+      <a href="{{ url_for('admin.request_detail', request_id=row.id) }}">{{ row.code }}</a>{{ ', ' if not loop.last }}
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="grid sidebar mt-4">
+  <div>
+    <div class="card flush">
+      <div class="card-body">
+        <div class="card-head">
+          <h2>Today's jobs</h2>
+          <a class="textlink" href="{{ url_for('admin.schedule_view') }}">Full week {{ icon('arrow', 15) }}</a>
+        </div>
+
+        {% if todays_jobs %}
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Time</th><th>Crew</th><th>Customer</th><th>Address</th><th></th></tr>
+              </thead>
+              <tbody>
+                {% for job in todays_jobs %}
+                  <tr>
+                    <td class="num"><b>{{ job.start_min|time }}</b><span class="sub">to {{ job.end_min|time }}</span></td>
+                    <td>{{ job.crew_name }}</td>
+                    <td>
+                      <a href="{{ url_for('admin.request_detail', request_id=job.request_id) }}">{{ job.customer_name }}</a>
+                      <span class="sub">{{ job.phone }}</span>
+                    </td>
+                    <td>{{ job.address }}<span class="sub">{{ job.town }}</span></td>
+                    <td class="right no-print">
+                      {% if job.status == 'completed' %}
+                        <span class="tag completed">Done</span>
+                      {% else %}
+                        <form method="post" action="{{ url_for('admin.appointment_action', appointment_id=job.id, action='complete') }}">
+                          <input type="hidden" name="back" value="{{ url_for('admin.dashboard') }}">
+                          <button class="btn tiny ghost" type="submit">Mark done</button>
+                        </form>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty">
+            Nothing scheduled today — a good day to find slots for the accepted ones.
+            <div><a class="btn ghost" href="{{ url_for('admin.requests_list', status='accepted') }}">See accepted requests</a></div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card flush">
+      <div class="card-body">
+        <div class="card-head">
+          <h2>Newest requests</h2>
+          <a class="textlink" href="{{ url_for('admin.requests_list') }}">See all {{ icon('arrow', 15) }}</a>
+        </div>
+
+        {% if new_leads %}
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>Code</th><th>Customer</th><th>Wants</th><th>Asked for</th><th class="right">Time</th></tr>
+              </thead>
+              <tbody>
+                {% for row in new_leads %}
+                  <tr>
+                    <td><a href="{{ url_for('admin.request_detail', request_id=row.id) }}">{{ row.code }}</a></td>
+                    <td>{{ row.customer_name }}<span class="sub">{{ row.town }}</span></td>
+                    <td>
+                      {% for key in row.services.split(',') if key %}{{ SERVICES[key].name }}{{ ', ' if not loop.last }}{% endfor %}
+                    </td>
+                    <td>{{ row.preferred_day|day if row.preferred_day else 'Flexible' }}</td>
+                    <td class="right num">{{ row.duration_min|hours }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty">
+            No new requests right now.
+            <div><a class="btn ghost" href="{{ url_for('public.book') }}">Open the public form</a></div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h3>Crew load this week</h3>
+      <div class="mt-4">
+        {% for member in crew_load %}
+          <div class="list-row">
+            <a href="{{ url_for('admin.crew_detail', crew_id=member.id) }}">{{ member.name }}</a>
+            <span class="tag">{{ member.jobs }} job{{ '' if member.jobs == 1 else 's' }}</span>
+          </div>
+        {% else %}
+          <p class="small muted mb-0">Nobody on the crew yet.
+            <a href="{{ url_for('admin.crew_list') }}">Add someone</a>.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Pipeline</h3>
+      <div class="mt-4">
+        {% for status in REQUEST_STATUSES %}
+          <div class="list-row">
+            <a class="small" href="{{ url_for('admin.requests_list', status=status) }}">{{ STATUS_LABELS[status] }}</a>
+            <b class="num">{{ counts[status] }}</b>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+</div>
+
+{% endblock %}

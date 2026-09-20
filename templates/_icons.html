@@ -1,0 +1,44 @@
+{#
+  Inline SVG icons. Emoji render at a different size and weight on every
+  machine, which made the service cards look ragged — these don't.
+
+  Use: {% from "_icons.html" import icon %}{{ icon('driveway') }}
+#}
+
+{% macro icon(name, size=24) -%}
+<svg class="icon" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none"
+     stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+     stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {%- if name == 'driveway' -%}
+    <path d="M9 21V10l-3 11M15 21V10l3 11"/><path d="M9 10h6"/>
+    <path d="M12 3v3M9.5 6.5 12 4l2.5 2.5"/>
+  {%- elif name == 'house' -%}
+    <path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>
+    <path d="M5 13.5h14M5 17.5h14"/>
+  {%- elif name == 'deck' -%}
+    <path d="M3 8h18M3 12h18M3 16h18"/><path d="M6 8v12M18 8v12"/>
+    <path d="M3 8 12 4l9 4"/>
+  {%- elif name == 'fence' -%}
+    <path d="M5 21V8l2-3 2 3v13M15 21V8l2-3 2 3v13"/>
+    <path d="M3 11h18M3 16h18"/>
+  {%- elif name == 'roof' -%}
+    <path d="M2 13 12 4l10 9"/><path d="M4.5 13h15"/>
+    <path d="M7 17h10M9 21h6"/>
+  {%- elif name == 'gutter' -%}
+    <path d="M3 7h18v4H3z"/><path d="M6 11v4a2 2 0 0 0 2 2h1"/>
+    <path d="M12 15v6M12 21l-1.5-2M12 21l1.5-2"/>
+  {%- elif name == 'clock' -%}
+    <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+  {%- elif name == 'phone' -%}
+    <path d="M6 3h4l2 5-2.5 1.5a11 11 0 0 0 5 5L16 12l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 4 5a2 2 0 0 1 2-2Z"/>
+  {%- elif name == 'pin' -%}
+    <path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>
+  {%- elif name == 'check' -%}
+    <path d="m4 12 5 5L20 6"/>
+  {%- elif name == 'arrow' -%}
+    <path d="M5 12h14M13 6l6 6-6 6"/>
+  {%- elif name == 'drag' -%}
+    <path d="M9 7 5 12l4 5M15 7l4 5-4 5"/>
+  {%- endif -%}
+</svg>
+{%- endmacro %}

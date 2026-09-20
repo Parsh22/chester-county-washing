@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% block title %}Customers{% endblock %}
+
+{% block body %}
+
+<div class="page-head">
+  <div>
+    <h1>Customers</h1>
+    <p class="muted small">{{ rows|length }} on file</p>
+  </div>
+  <form method="get" class="inline-form">
+    <div class="field field-sm grow">
+      <label for="q">Search</label>
+      <input id="q" type="search" name="q" value="{{ search }}" placeholder="Name, phone, town">
+    </div>
+    <button class="btn ghost" type="submit">Search</button>
+  </form>
+</div>
+
+<div class="card flush">
+  {% if rows %}
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Contact</th><th>Address</th><th class="right">Jobs</th><th>Last request</th></tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td><a href="{{ url_for('admin.customer_detail', customer_id=row.id) }}">{{ row.name }}</a></td>
+              <td>{{ row.phone }}<span class="sub">{{ row.email }}</span></td>
+              <td>{{ row.address }}<span class="sub">{{ row.town }}</span></td>
+              <td class="right num">{{ row.jobs }}</td>
+              <td class="num">{{ row.last_seen[:10]|day if row.last_seen else '—' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      {% if search %}
+        Nobody matches "{{ search }}".
+        <div><a class="btn ghost" href="{{ url_for('admin.customers_list') }}">Clear the search</a></div>
+      {% else %}
+        No customers yet. They get added automatically the first time someone books.
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}
