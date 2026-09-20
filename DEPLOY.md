@@ -21,15 +21,16 @@ need a paid plan. If you want `chestercountywashing.org`, skip to
 
 ### 1. Put the code on GitHub
 
-From this folder:
+Create an empty repo called **chester-county-washing** at
+[github.com/new](https://github.com/new) — no README, no .gitignore, no
+licence, since this folder already has all three. Then, from this folder:
 
 ```bash
-git remote add origin https://github.com/YOURNAME/chester-county-washing.git
-git branch -M main
 git push -u origin main
 ```
 
-The repo is already initialised and committed. `.env`, `data/` and `.venv/`
+The repo is already initialised, committed, and pointed at
+`https://github.com/Parsh22/chester-county-washing.git`. `.env`, `data/` and `.venv/`
 are gitignored, so no secrets or customer data leave your laptop.
 
 > A **public** repo is fine — there are no secrets in it. Make it private if
@@ -41,12 +42,15 @@ are gitignored, so no secrets or customer data leave your laptop.
 **Create a Beginner account** (the free one). Your username becomes your web
 address, so pick something like `chestercountywashing`.
 
+> This is a **new account, separate from GitHub**. Everywhere below,
+> `PA-USERNAME` means this PythonAnywhere username — not `Parsh22`.
+
 ### 3. Clone and install
 
 Open **Consoles → Bash** and run:
 
 ```bash
-git clone https://github.com/YOURNAME/chester-county-washing.git
+git clone https://github.com/Parsh22/chester-county-washing.git
 cd chester-county-washing
 python3.12 -m venv .venv
 .venv/bin/pip install -r requirements.txt
@@ -81,8 +85,8 @@ the Flask option) → **Python 3.12**. Then set three things on that page:
 
 | Field | Value |
 |---|---|
-| **Source code** | `/home/YOURNAME/chester-county-washing` |
-| **Virtualenv** | `/home/YOURNAME/chester-county-washing/.venv` |
+| **Source code** | `/home/PA-USERNAME/chester-county-washing` |
+| **Virtualenv** | `/home/PA-USERNAME/chester-county-washing/.venv` |
 | **WSGI configuration file** | click it, then paste the contents of `deploy/pythonanywhere_wsgi.py` over everything in that file, replacing `YOURUSERNAME` |
 
 Under **Static files**, add one mapping so images and CSS don't go through
@@ -90,13 +94,13 @@ Python:
 
 | URL | Directory |
 |---|---|
-| `/static/` | `/home/YOURNAME/chester-county-washing/static/` |
+| `/static/` | `/home/PA-USERNAME/chester-county-washing/static/` |
 
 Hit the big green **Reload** button.
 
 ### 6. Check it
 
-Visit `https://YOURNAME.pythonanywhere.com`. If something's wrong, the **Web**
+Visit `https://PA-USERNAME.pythonanywhere.com`. If something's wrong, the **Web**
 tab has an error log — the traceback is almost always in there.
 
 A blank "Refusing to start" error in the log means step 4 didn't take: the app

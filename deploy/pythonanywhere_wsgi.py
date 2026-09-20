@@ -4,16 +4,17 @@ PythonAnywhere WSGI entry point.
 Copy the contents of this file into the WSGI configuration file that
 PythonAnywhere creates for you — the Web tab links to it, and it lives at:
 
-    /var/www/YOURUSERNAME_pythonanywhere_com_wsgi.py
+    /var/www/PA-USERNAME_pythonanywhere_com_wsgi.py
 
-Replace YOURUSERNAME below with your PythonAnywhere username, delete
-everything else that's already in that file, and hit Reload.
+Replace PA-USERNAME below with your PythonAnywhere username (the one in that
+web address, not your GitHub name), delete everything already in that file,
+and hit Reload.
 """
 
 import os
 import sys
 
-PROJECT = "/home/YOURUSERNAME/chester-county-washing"
+PROJECT = "/home/PA-USERNAME/chester-county-washing"
 
 # Put the project on the import path so `import app` finds our app.py.
 if PROJECT not in sys.path:
