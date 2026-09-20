@@ -78,22 +78,12 @@ scoped to one repo, but don't do it with a token that can write.
 Still in the Bash console:
 
 ```bash
-python3.12 tools/make_env.py --prod
+python3.12 tools/make_env.py --prod --write
 ```
 
-That prints a `SECRET_KEY` and an `ADMIN_PASSWORD`. **Copy the password
-somewhere safe — you can't get it back.** Then write them into a file:
-
-```bash
-nano .env
-```
-
-Paste the four lines it printed, save with `Ctrl-O`, `Enter`, exit with
-`Ctrl-X`. Then lock it down so only you can read it:
-
-```bash
-chmod 600 .env
-```
+That generates the secrets, writes `.env`, and locks it to your account
+(mode 600). It prints your `/admin` password once — **copy it somewhere safe
+now**, it isn't stored anywhere you can read back.
 
 ### 5. Point the web app at it
 
